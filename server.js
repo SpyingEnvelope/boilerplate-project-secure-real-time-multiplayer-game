@@ -36,7 +36,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({origin: '*'})); 
 const io = socket(http);
 
-playerObj = {};
+playerObj = {
+  food: {
+    x: 200,
+    y: 200
+  }
+};
 
 io.on('connection', client => {
   // On connection, create a new player and add the player to the player object
@@ -51,28 +56,62 @@ io.on('connection', client => {
     id: client.id
   })
 
+  function calculateRank() {
+    let rankObj = {};
+
+    Object.keys(playerObj).forEach((key) => {
+      if (key == 'food') {
+        return
+      }
+
+      
+    })
+  }
+
+  function collectFood() {
+    playerObj[client.id].score += 1;
+
+    let randomX = Math.floor(Math.random() * 580);
+    let randomY = Math.floor(Math.random() * 430);
+
+    if (randomY < 50) {
+      randomY = randomY + 50;
+    }
+
+    playerObj.food.x = Math.floor(randomX / 10) * 10;
+    playerObj.food.y = Math.floor(randomY / 10) * 10;
+
+    io.emit('gamestate', JSON.stringify(playerObj));
+
+  }
+
   // a function for wall detection
   function detectWalls() {
     //Left wall
-    if (playerObj[client.id].x < 0) {
-      playerObj[client.id].x = 0;
+    if (playerObj[client.id].x < 10) {
+      playerObj[client.id].x = 10;
     }
 
     //Right wall
-    if (playerObj[client.id].x + playerObj[client.id].w > 640) {
-      playerObj[client.id].x = 640 - playerObj[client.id].w;
+    if (playerObj[client.id].x + playerObj[client.id].w > 630) {
+      playerObj[client.id].x = 630 - playerObj[client.id].w;
     }
 
     //Top wall
-    if (playerObj[client.id].y < 0) {
-      playerObj[client.id].y = 0;
+    if (playerObj[client.id].y < 50) {
+      playerObj[client.id].y = 50;
     }
 
-    if (playerObj[client.id].y + playerObj[client.id].h > 480) {
-      playerObj[client.id].y = 480 - playerObj[client.id].h;
+    //Bottom wall
+    if (playerObj[client.id].y + playerObj[client.id].h > 470) {
+      playerObj[client.id].y = 470 - playerObj[client.id].h;
     }
 
-    io.emit('gamestate', JSON.stringify(playerObj));
+    if (playerObj[client.id].x == playerObj.food.x && playerObj[client.id].y == playerObj.food.y) {
+      collectFood();
+    } else {
+      io.emit('gamestate', JSON.stringify(playerObj));
+    }
   }
 
   
