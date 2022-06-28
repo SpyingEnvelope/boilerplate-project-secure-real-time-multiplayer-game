@@ -63,7 +63,7 @@ function drawPlayer(x, y, w, h, playerId, score) {
 
         ctx.font = '20px Arial';
         ctx.fillStyle = 'white';
-        ctx.fillText(score, canvas.width - 50, 30)
+        ctx.fillText(score.rank + ' / ' + score.numOfPlayers, canvas.width - 55, 30)
     } else {
         ctx.drawImage(otherPlayers, x, y, w, h)
     }
@@ -71,11 +71,14 @@ function drawPlayer(x, y, w, h, playerId, score) {
 }
 
 function drawGame(gameState) {
+    const keysFromGameState = Object.keys(gameState);
+    const numberOfPlayers = keysFromGameState.length - 1
+
     Object.keys(gameState).forEach((key) => {
         if (key == 'food') {
             drawFood(gameState[key].x, gameState[key].y)
         } else {
-            drawPlayer(gameState[key].x, gameState[key].y, gameState[key].w, gameState[key].h, key, gameState[key].score)
+            drawPlayer(gameState[key].x, gameState[key].y, gameState[key].w, gameState[key].h, key, {rank: gameState[key].rank, numOfPlayers: numberOfPlayers})
         }
         
     })

@@ -1,11 +1,12 @@
 class Player {
-  constructor({w, h, x, y, score, id}) {
+  constructor({w, h, x, y, score, id, rank}) {
     this.w = w;
     this.h = h;
     this.x = x;
     this.y = y;
     this.score = score;
     this.id = id;
+    this.rank = rank;
   }
 
   movePlayer(dir, speed) {

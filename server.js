@@ -45,7 +45,7 @@ playerObj = {
 
 io.on('connection', client => {
   // On connection, create a new player and add the player to the player object
-  let newPlayer = new Player({w: 40, h: 40, x: 20, y: 200, score: 0, id: client.id})
+  let newPlayer = new Player({w: 40, h: 40, x: 20, y: 200, score: 0, id: client.id, rank: Object.keys(playerObj).length})
   playerObj[newPlayer.id] = newPlayer;
 
   // update the gamestate to all sockets connected
@@ -57,31 +57,59 @@ io.on('connection', client => {
   })
 
   function calculateRank() {
-    let rankObj = {};
-
+    // create array to push to
+    let rankArr = [];
+    
+    // push each player score to the new array
     Object.keys(playerObj).forEach((key) => {
       if (key == 'food') {
         return
+      } else {
+        rankArr.push({'id': playerObj[key].id, 'score': playerObj[key].score})
       }
+      
+      // sort the array by score and enter a rank based on it
+      rankArr = rankArr.sort((a, b) => {
+        return b.score - a.score
+      }).map((e, i) => {
+        e.rank = (i + 1);
+        return e;
+      })
 
+      rankArr.forEach(entry => {
+          playerObj[entry.id].rank = entry.rank;
+      })
+
+      // emit the gamestate to everybody
+      io.emit('gamestate', JSON.stringify(playerObj));
       
     })
   }
 
   function collectFood() {
+    // add to the player score
     playerObj[client.id].score += 1;
 
-    let randomX = Math.floor(Math.random() * 580);
+    // generate a random number for position
+    let randomX = Math.floor(Math.random() * 570);
     let randomY = Math.floor(Math.random() * 430);
-
+    
+    // if randomY is under fifty, add fifty to it
     if (randomY < 50) {
       randomY = randomY + 50;
     }
+    // if random x is under 10, add 10 to it
+    if (randomX < 10) {
+      randomX = randomX + 10;
+    }
 
+    // position the food
     playerObj.food.x = Math.floor(randomX / 10) * 10;
     playerObj.food.y = Math.floor(randomY / 10) * 10;
 
-    io.emit('gamestate', JSON.stringify(playerObj));
+    calculateRank();
+
+    // io.emit('gamestate', JSON.stringify(playerObj));
 
   }
 
