@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const expect = require('chai');
 const socket = require('socket.io');
 const Player = require('./public/Player.js');
+const helmet = require('helmet');
+const nocache = require('nocache');
 
 const app = express();
 const http = require('http').createServer(app);
@@ -11,6 +13,9 @@ const options = {
   cors: true,
   origins: ['*']
 }
+
+app.use(helmet());
+app.use(nocache());
 
 
 const cors = require('cors');
@@ -24,6 +29,7 @@ app.use('/assets', express.static(process.cwd() + '/assets'));
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("x-powered-by", "PHP 7.4.3");
   next()
 })
 
@@ -165,7 +171,7 @@ io.on('connection', client => {
   // on disconnect, remove the player from the player object and emit to all sockets
   client.on('disconnect', () => {
     delete playerObj[client.id]
-    io.emit('gamestate', JSON.stringify(playerObj));
+    calculateRank();
   })
 })
 // Index page (static HTML)
